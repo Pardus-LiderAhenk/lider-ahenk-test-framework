@@ -1,4 +1,4 @@
-package tr.org.liderahenk.test.core;
+package org.liderahenk.test;
 import static org.junit.Assert.assertTrue;
 import static org.ops4j.pax.exam.CoreOptions.maven;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.configureSecurity;
@@ -70,7 +70,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class LiderKarafContainerTestBase {
+public class LiderKarafTestContainer {
 
     public static final String MIN_RMI_SERVER_PORT = "44444";
     public static final String MAX_RMI_SERVER_PORT = "66666";
@@ -85,10 +85,10 @@ public class LiderKarafContainerTestBase {
     static final Long SERVICE_TIMEOUT = 30000L;
     static final long BUNDLE_TIMEOUT = 30000L;
 
-    private static Logger LOG = LoggerFactory.getLogger(LiderKarafContainerTestBase.class);
+    private static Logger LOG = LoggerFactory.getLogger(LiderKarafTestContainer.class);
 
     @Rule
-    public LiderTestWatcher baseTestWatcher = new LiderTestWatcher();
+    public LiderWatcher baseTestWatcher = new LiderWatcher();
 
     ExecutorService executor = Executors.newCachedThreadPool();
 

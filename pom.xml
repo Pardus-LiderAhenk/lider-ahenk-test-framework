@@ -12,5 +12,7 @@
     <module>lider-pax-test</module>
     <module>lider-embedded-xmpp</module>
     <module>lider-embedded-ldap</module>
+    <module>lider-embedded-db</module>
+    <module>lider-test-samples</module>
   </modules>
 </project>
