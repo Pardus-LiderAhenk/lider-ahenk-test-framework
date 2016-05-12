@@ -1,0 +1,47 @@
+version: 1
+
+#################################################
+#
+# 1. Download: http://directory.apache.org/studio/ as Eclipse plugin or standalone.
+#
+# 2. Create server
+# 2.1 Right click -> Open Configuration -> Partition
+# 2.2 Delete example partition (not system!!!)
+# 2.3 Add ...
+# 2.4 Suffix: o=TEST
+# 2.5 Save and start server
+# 
+# 3. Create connection
+# 3.1 Open connection
+# 3.2 Right click -> Import -> LDIF-Import...
+# 3.3 Choose this file
+#
+# 4. Configure connection in admin view:
+#
+# host:			localhost
+# port:			10389
+# user:			uid=admin,ou=system
+# password:		secret
+# base dn:		o=TEST
+#
+#################################################
+dn: dc=tr,dc=org,dc=pardus,dc=mys,dc=test
+objectclass: top
+objectclass: domain
+dc: tr
+
+dn: cn=25214046712,dc=tr,dc=org,dc=pardus,dc=mys,dc=test
+objectclass: pardus-person
+objectclass: top
+objectclass: inetOrgPerson
+objectclass: person
+objectclass: organizationalPerson
+cn: 25214046712
+il:06
+sn: bavci
+description: Bora AVCI
+mail: bavci@innova.com.tr
+userPassword:: MTIzNDU=
+
+
+

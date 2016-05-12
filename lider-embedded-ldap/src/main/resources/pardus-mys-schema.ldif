@@ -1,0 +1,76 @@
+version: 1
+
+dn: cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: metaSchema
+cn: pardus-mys
+m-dependencies: inetorgperson
+
+dn: ou=objectclasses,cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: organizationalUnit
+ou: objectClasses
+
+dn: ou=ditcontentrules,cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: organizationalUnit
+ou: ditcontentrules
+
+dn: ou=attributetypes,cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: organizationalUnit
+ou: attributetypes
+
+dn: m-oid=1.2.3.4.5.6,ou=objectclasses,cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: metaTop
+objectclass: metaObjectClass
+m-oid: 1.2.3.4.5.6
+m-must: il
+m-name: pardus-person
+m-supobjectclass: inetOrgPerson
+
+dn: ou=nameforms,cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: organizationalUnit
+ou: nameforms
+
+dn: ou=matchingruleuse,cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: organizationalUnit
+ou: matchingruleuse
+
+dn: ou=comparators,cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: organizationalUnit
+ou: comparators
+
+dn: ou=ditstructurerules,cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: organizationalUnit
+ou: ditstructurerules
+
+dn: ou=matchingrules,cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: organizationalUnit
+ou: matchingrules
+
+dn: ou=normalizers,cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: organizationalUnit
+ou: normalizers
+
+dn: ou=syntaxes,cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: organizationalUnit
+ou: syntaxes
+
+dn: m-oid=1.2.1000.1.1.1,ou=attributetypes,cn=pardus-mys,ou=schema
+objectclass: top
+objectclass: metaAttributeType
+objectclass: metaTop
+m-oid: 1.2.1000.1.1.1
+m-name: il
+m-singlevalue: TRUE
+m-supattributetype: departmentNumber
+

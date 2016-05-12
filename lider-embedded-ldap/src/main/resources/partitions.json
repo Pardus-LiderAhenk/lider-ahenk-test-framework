@@ -1,0 +1,21 @@
+{
+	"partitions": 
+	{
+		"pardusmys": {
+			"dn":"dc=tr,dc=org,dc=pardus,dc=mys,dc=test",
+			"attributes": {
+				"dc":"test",
+				"objectClass":["top","domain","extensibleObject"
+				]
+			}
+		},
+		"samples": {
+			"dn":"dc=examples,dc=com",
+			"attributes": {
+				"dc":"examples",
+				"objectClass":["top","domain","extensibleObject"
+				]
+			}
+		}
+	}
+}
