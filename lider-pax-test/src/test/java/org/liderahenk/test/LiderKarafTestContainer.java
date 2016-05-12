@@ -86,6 +86,7 @@ public class LiderKarafTestContainer {
     static final long BUNDLE_TIMEOUT = 30000L;
 
     private static Logger LOG = LoggerFactory.getLogger(LiderKarafTestContainer.class);
+    private Option[] customOptions;
 
     @Rule
     public LiderWatcher baseTestWatcher = new LiderWatcher();
@@ -123,41 +124,46 @@ public class LiderKarafTestContainer {
         }
     	return new File(res.getFile());
     }
+    
+    
+    public Option[] getOptions(){
+    	Option[] options;
+    	if(getCustomOptions() != null && getCustomOptions().length > 0){
+    		options = new Option[7 + getCustomOptions().length];
+    	}else {
+    		options = new Option[7];
+    	}
+    	
+    	
+    	
+    	
+    	 MavenArtifactUrlReference karafUrl = maven().groupId("org.apache.karaf").artifactId("apache-karaf").version("4.0.4").type("tar.gz");
+         MavenUrlReference liderRepo = maven().groupId("tr.org.liderahenk").artifactId("lider-features").version("1.0.0-SNAPSHOT").classifier("features").type("xml");
+         String httpPort = Integer.toString(getAvailablePort(Integer.parseInt(MIN_HTTP_PORT), Integer.parseInt(MAX_HTTP_PORT)));
+         String rmiRegistryPort = Integer.toString(getAvailablePort(Integer.parseInt(MIN_RMI_REG_PORT), Integer.parseInt(MAX_RMI_REG_PORT)));
+         String rmiServerPort = Integer.toString(getAvailablePort(Integer.parseInt(MIN_RMI_SERVER_PORT), Integer.parseInt(MAX_RMI_SERVER_PORT)));
+         String sshPort = Integer.toString(getAvailablePort(Integer.parseInt(MIN_SSH_PORT), Integer.parseInt(MAX_SSH_PORT)));
+    	
+         options[0]= karafDistributionConfiguration().frameworkUrl(karafUrl).name("Apache Karaf").unpackDirectory(new File("target/exam")).useDeployFolder(false);
+         options[1]= configureSecurity().disableKarafMBeanServerBuilder();
+         options[2]= configureSecurity().disableKarafMBeanServerBuilder();
+         options[3]= keepRuntimeFolder();
+         options[4]= logLevel(LogLevel.INFO);
+         options[5]= features(liderRepo, "lider");
+         options[6]= replaceConfigurationFile("etc/tr.org.liderahenk.cfg", getConfigFile("/etc/tr.org.liderahenk.cfg"));
+         
+         if (getCustomOptions() != null){
+        	 for(int i=0;i<getCustomOptions().length;i++){
+            	 options[7+i] = getCustomOptions()[i];
+             }
+         }
+        
+    	return options;
+    }
 
     @Configuration
     public Option[] config() {
-        MavenArtifactUrlReference karafUrl = maven().groupId("org.apache.karaf").artifactId("apache-karaf").version("4.0.4").type("tar.gz");
-        MavenUrlReference liderRepo = maven().groupId("tr.org.liderahenk").artifactId("lider-features").version("1.0.0-SNAPSHOT").classifier("features").type("xml");
-        String httpPort = Integer.toString(getAvailablePort(Integer.parseInt(MIN_HTTP_PORT), Integer.parseInt(MAX_HTTP_PORT)));
-        String rmiRegistryPort = Integer.toString(getAvailablePort(Integer.parseInt(MIN_RMI_REG_PORT), Integer.parseInt(MAX_RMI_REG_PORT)));
-        String rmiServerPort = Integer.toString(getAvailablePort(Integer.parseInt(MIN_RMI_SERVER_PORT), Integer.parseInt(MAX_RMI_SERVER_PORT)));
-        String sshPort = Integer.toString(getAvailablePort(Integer.parseInt(MIN_SSH_PORT), Integer.parseInt(MAX_SSH_PORT)));
-
-        return new Option[]{
-            // KarafDistributionOption.debugConfiguration("8889", true),
-            karafDistributionConfiguration().frameworkUrl(karafUrl).name("Apache Karaf").unpackDirectory(new File("target/exam")).useDeployFolder(false),
-            // enable JMX RBAC security, thanks to the KarafMBeanServerBuilder
-            configureSecurity().disableKarafMBeanServerBuilder(),
-           // mavenBundle().groupId("tr.org.liderahenk").artifactId("lider-pax-test").version("1.0.0-SNAPSHOT"),
-            keepRuntimeFolder(),
-            logLevel(LogLevel.INFO),
-            features(liderRepo, "lider"),
-            replaceConfigurationFile("etc/tr.org.liderahenk.cfg", getConfigFile("/etc/tr.org.liderahenk.cfg")),
-//            replaceConfigurationFile("etc/org.ops4j.pax.logging.cfg", getConfigFile("/etc/org.ops4j.pax.logging.cfg")),
-//            editConfigurationFilePut("etc/org.ops4j.pax.web.cfg", "org.osgi.service.http.port", httpPort),
-//            editConfigurationFilePut("etc/org.apache.karaf.management.cfg", "rmiRegistryPort", rmiRegistryPort),
-//            editConfigurationFilePut("etc/org.apache.karaf.management.cfg", "rmiServerPort", rmiServerPort),
-//            editConfigurationFilePut("etc/org.apache.karaf.shell.cfg", "sshPort", sshPort),
-//            editConfigurationFilePut("etc/system.properties", "spring31.version", System.getProperty("spring31.version")),
-//            editConfigurationFilePut("etc/system.properties", "spring32.version", System.getProperty("spring32.version")),
-//            editConfigurationFilePut("etc/system.properties", "spring40.version", System.getProperty("spring40.version")),
-//            editConfigurationFilePut("etc/system.properties", "spring41.version", System.getProperty("spring41.version")),
-//            editConfigurationFilePut("etc/system.properties", "spring42.version", System.getProperty("spring42.version")),
-            
-//            streamBundle(bundle().add(getClass())
-//            		.add(LiderTestWatcher.class)
-//            		.set(Constants.DYNAMICIMPORT_PACKAGE, "*").build()),
-        };
+       return getOptions();
     }
 
     private int getAvailablePort(int min, int max) {
@@ -564,6 +570,14 @@ public class LiderKarafTestContainer {
 			}
     	}
     }
+
+	public Option[] getCustomOptions() {
+		return customOptions;
+	}
+
+	public void setCustomOptions(Option[] customOptions) {
+		this.customOptions = customOptions;
+	}
 	
 	
 	
