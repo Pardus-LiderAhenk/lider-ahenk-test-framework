@@ -1,4 +1,4 @@
-package tr.org.liderahenk;
+package test.liderahenk.db;
 
 import ch.vorburger.exec.ManagedProcessException;
 import ch.vorburger.mariadb4j.DB;

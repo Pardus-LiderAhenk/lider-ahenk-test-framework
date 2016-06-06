@@ -1,15 +1,19 @@
-package test.apacheds.server;
+package test.liderahenk.ldap.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.NamingException;
 
 import org.apache.directory.server.core.api.DirectoryService;
 import org.apache.directory.server.core.api.InstanceLayout;
+import org.apache.directory.server.core.api.schema.SchemaPartition;
 import org.apache.directory.server.core.factory.DefaultDirectoryServiceFactory;
 import org.apache.directory.server.core.partition.impl.avl.AvlPartition;
+import org.apache.directory.server.core.partition.ldif.LdifPartition;
+import org.apache.directory.server.i18n.I18n;
 import org.apache.directory.server.ldap.LdapServer;
 import org.apache.directory.server.protocol.shared.store.LdifFileLoader;
 import org.apache.directory.server.protocol.shared.transport.TcpTransport;
@@ -17,16 +21,24 @@ import org.apache.directory.shared.ldap.model.entry.Entry;
 import org.apache.directory.shared.ldap.model.exception.LdapException;
 import org.apache.directory.shared.ldap.model.exception.LdapInvalidDnException;
 import org.apache.directory.shared.ldap.model.name.Dn;
+import org.apache.directory.shared.ldap.model.schema.SchemaManager;
+import org.apache.directory.shared.ldap.schemaextractor.SchemaLdifExtractor;
+import org.apache.directory.shared.ldap.schemaextractor.impl.DefaultSchemaLdifExtractor;
+import org.apache.directory.shared.util.exception.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class EmbeddedLdapServer {
-	//Eger partition olusturmak icin 2. yontem (JSON dosyasi okumak) secildiyse bu dosyadan okunabilir.
-	//public static final String PARTITIONS_JSON = "/partitions.json";
-	private static final String INSTANCE_NAME = "Test";
+	
+
+	public static final String EXAMPLE_DATA = "/example-data.ldif";
+	public static final String LIDERAHENK_LDAP_SCHEMA = "/liderahenk_apacheds.ldif";
+	public static Boolean keepRun = true;
+	
+	private static final String INSTANCE_NAME = "LiderAhenkTest";
 	private static final String INSTANCE_PATH = "/tmp/ldapServer";
-	private static final String BASE_DN = "dc=tr,dc=org,dc=pardus,dc=mys,dc=test";
+	private static final String BASE_DN = "dc=liderahenk,dc=org,dc=tr";
 	private static final String BANNER_LDAP =
 	          "           _                     _          ____  ____   \n"
 	        	        + "          / \\   _ __    ___  ___| |__   ___|  _ \\/ ___|  \n"
@@ -39,15 +51,28 @@ public class EmbeddedLdapServer {
 	private DirectoryService directoryService;
 	private LdapServer ldapService;
 
-	private final String host;
-	private final Integer port;
-
-	public EmbeddedLdapServer(final String host, final Integer port) {
-		this.host = host;
-		this.port = port;
-
+	private final String host = "localhost";
+	private final Integer port = 10389;
+	
+	
+	public void execute(){
 		try {
 			init();
+			start();
+			File dir = new File(this.getClass().getResource(LIDERAHENK_LDAP_SCHEMA).getFile());
+			applyLdif(dir);
+			
+			getDirectoryService().getSchemaManager().loadAllEnabled();
+
+			dir = new File(this.getClass().getResource(EXAMPLE_DATA).getFile());
+			applyLdif(dir);
+			
+			System.out.println(getDirectoryService().getAdminSession().exists("uid=test,dc=liderahenk,dc=org,dc=tr"));
+			
+			while(keepRun){
+				Thread.sleep(1000);
+			}
+			
 		} catch (IOException e) {
 			log.error("IOException while initializing EmbeddedLdapServer", e);
 		} catch (LdapException e) {
@@ -57,8 +82,22 @@ public class EmbeddedLdapServer {
 					e);
 		} catch (Exception e) {
 			log.error("Exception while initializing EmbeddedLdapServer", e);
+		}finally {
+			try {
+				//stop server
+				stop();
+				System.out.println("Embedded LDAP server stopped");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
+		
+		
+		
 	}
+	
+	
+
 
 	private void init() throws Exception, IOException, LdapException,
 			NamingException {
@@ -73,23 +112,67 @@ public class EmbeddedLdapServer {
 		InstanceLayout il = new InstanceLayout(INSTANCE_PATH);
 		directoryService.setInstanceLayout(il);
 		
+		System.out.println("###########");
+		System.out.println(il.getInstanceDirectory());
+		SchemaManager schemaManager = directoryService.getSchemaManager();
+		
+		File schemaPartitionDirectory = new File( il.getPartitionsDirectory(), "schema" );
+		
+		// Extract the schema on disk (a brand new one) and load the registries
+        if ( schemaPartitionDirectory.exists() )
+        {
+            System.out.println( "schema partition already exists, skipping schema extraction" );
+        }
+        else
+        {
+        	System.out.println("Yoktur");
+            SchemaLdifExtractor extractor = new DefaultSchemaLdifExtractor( il.getPartitionsDirectory() );
+            extractor.extractOrCopy();
+        }
+		
+//        SchemaLoader loader = new LdifSchemaLoader( schemaPartitionDirectory );
+//        
+//        SchemaManager sc = new DefaultSchemaManager( loader );
+        
+        
+        // We have to load the schema now, otherwise we won't be able
+        // to initialize the Partitions, as we won't be able to parse
+        // and normalize their suffix Dn
+        schemaManager.loadAllEnabled();
+
+        List<Throwable> errors = schemaManager.getErrors();
+
+        if ( errors.size() != 0 )
+        {
+            throw new Exception( I18n.err( I18n.ERR_317, Exceptions.printErrors( errors ) ) );
+        }
+
+        directoryService.setSchemaManager( schemaManager );
+        
+        
+        // Init the LdifPartition with schema
+        LdifPartition schemaLdifPartition = new LdifPartition(schemaManager);
+        schemaLdifPartition.setPartitionPath(schemaPartitionDirectory.toURI());
+
+        // The schema partition
+        SchemaPartition schemaPartition = new SchemaPartition(schemaManager);
+        schemaPartition.setWrappedPartition(schemaLdifPartition);
+        directoryService.setSchemaPartition(schemaPartition);
+		
+		
 		//Partition eklemek icin 1. yontem
 		AvlPartition partition = new AvlPartition(
 				directoryService.getSchemaManager());
 		partition.setId(INSTANCE_NAME);
-		partition.setSuffixDn(new Dn(directoryService.getSchemaManager(),
+		partition.setSuffixDn(new Dn(schemaManager,
 				BASE_DN));
 		partition.initialize();
 		directoryService.addPartition(partition);
-		//2. yontem ise json dosyasindan okumak 
-		/*PartitionHandler ph = new PartitionHandler(directoryService);
-        ph.init(PARTITIONS_JSON);*/
+		
 		
 		ldapService = new LdapServer();
 		ldapService.setTransports(new TcpTransport(host, port));
 		ldapService.setDirectoryService(directoryService);
-		
-		
 		
 	}
 
@@ -135,5 +218,10 @@ public class EmbeddedLdapServer {
 			}
 			directoryService.getAdminSession().add(entry);
 		}
+	}
+	
+	
+	public DirectoryService getDirectoryService(){
+		return directoryService;
 	}
 }

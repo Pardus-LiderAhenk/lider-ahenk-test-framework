@@ -1,4 +1,4 @@
-package test.apacheds.server;
+package test.liderahenk.ldap.server;
 
 import java.io.File;
 import java.io.FileReader;
