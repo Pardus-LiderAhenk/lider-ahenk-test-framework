@@ -1,10 +1,9 @@
 package test.liderahenk.xmpp;
 
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,21 +16,23 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.apache.vysper.mina.S2SEndpoint;
 import org.apache.vysper.mina.TCPEndpoint;
 import org.apache.vysper.storage.StorageProviderRegistry;
 import org.apache.vysper.storage.inmemory.MemoryStorageProviderRegistry;
 import org.apache.vysper.xmpp.addressing.Entity;
 import org.apache.vysper.xmpp.addressing.EntityImpl;
 import org.apache.vysper.xmpp.authorization.AccountManagement;
+import org.apache.vysper.xmpp.authorization.SASLMechanism;
 import org.apache.vysper.xmpp.modules.Module;
 import org.apache.vysper.xmpp.modules.extension.xep0049_privatedata.PrivateDataModule;
 import org.apache.vysper.xmpp.modules.extension.xep0050_adhoc_commands.AdhocCommandsModule;
 import org.apache.vysper.xmpp.modules.extension.xep0054_vcardtemp.VcardTempModule;
-import org.apache.vysper.xmpp.modules.extension.xep0077_inbandreg.InBandRegistrationModule;
 import org.apache.vysper.xmpp.modules.extension.xep0092_software_version.SoftwareVersionModule;
 import org.apache.vysper.xmpp.modules.extension.xep0119_xmppping.XmppPingModule;
 import org.apache.vysper.xmpp.modules.extension.xep0133_service_administration.ServiceAdministrationModule;
 import org.apache.vysper.xmpp.modules.extension.xep0202_entity_time.EntityTimeModule;
+import org.apache.vysper.xmpp.server.ServerFeatures;
 import org.apache.vysper.xmpp.server.XMPPServer;
 
 /**
@@ -39,20 +40,26 @@ import org.apache.vysper.xmpp.server.XMPPServer;
  *
  * @author The Apache MINA Project (dev@mina.apache.org)
  */
-public class ServerMain implements IoHandler{
+public class ServerMain implements IoHandler {
 
+	
 	public static final int SHUTDOWN_PORT = 5333;
 	private XMPPServer server;
 	private IoAcceptor shutdownAcceptor;
 	
-	boolean exit = false;
-	
+	public boolean exit = false;
 	
 	public ServerMain() throws Exception {
 		server = init();
 		shutdownAcceptor = addShutdownHook();
 	}
 	
+	
+	   public void stopServer(){
+	    	shutdownAcceptor.unbind();
+	    	server.stop();
+	    	//System.exit(0);
+	    }
     /**
      * boots the server as a standalone application
      * 
@@ -61,21 +68,8 @@ public class ServerMain implements IoHandler{
      * -Dvysper.add.module=org.apache.vysper.xmpp.modules.extension.xep0060_pubsub.PublishSubscribeModule,... more ...
      * 
      * @param args
-     * @throws Exception 
      */
-    public static void main(String[] args) throws Exception {
-    	ServerMain serverMain = new ServerMain();
-    }
-    
-    public void stopServer(){
-    	shutdownAcceptor.unbind();
-    	server.stop();
-    	//System.exit(0);
-    }
-    
-    
-    public XMPPServer init() throws Exception{
-
+    public XMPPServer init() throws Exception {
 
         String domain = "localhost";
         
@@ -90,43 +84,45 @@ public class ServerMain implements IoHandler{
         //StorageProviderRegistry providerRegistry = new JcrStorageProviderRegistry();
         StorageProviderRegistry providerRegistry = new MemoryStorageProviderRegistry();
 
-        final Entity adminJID = EntityImpl.parseUnchecked("lider1@" + domain);
+        final Entity adminJID = EntityImpl.parseUnchecked("admin@" + domain);
         final AccountManagement accountManagement = (AccountManagement) providerRegistry
                 .retrieve(AccountManagement.class);
 
         String initialPassword = System.getProperty("vysper.admin.initial.password", "admin");
         if (!accountManagement.verifyAccountExists(adminJID)) {
             accountManagement.addUser(adminJID, initialPassword);
-            Entity user = EntityImpl.parseUnchecked("user@" + domain);
-            accountManagement.addUser(user, "asddsa123");
         }
-        
-        Entity user = EntityImpl.parseUnchecked("user@" + domain);
-        accountManagement.addUser(user, "asddsa123");
 
         XMPPServer server = new XMPPServer(domain);
         server.addEndpoint(new TCPEndpoint());
+        server.addEndpoint(new S2SEndpoint());
         //server.addEndpoint(new StanzaSessionFactory());
         server.setStorageProviderRegistry(providerRegistry);
-
-        URL url = Thread.currentThread().getContextClassLoader().getResource("bogus_mina_tls.cert");
-        URI uri = url.toURI();
         
-        server.setTLSCertificateInfo(new File(uri), "boguspw");
-
-        try {
-            server.start();
-            System.out.println("vysper server is running...");
-        } catch (Exception e) {
-            e.printStackTrace();
+//        server.setTLSCertificateInfo(new File("src/main/config/bogus_mina_tls.cert"), "boguspw");
+        server.setTLSCertificateInfo(new File("src/main/config/keystore.jks"), "123456");
+        
+        server.start();
+        
+        server.getServerRuntimeContext().getServerFeatures().setStartTLSRequired(false);
+        
+        ServerFeatures serverFeatures = server.getServerRuntimeContext().getServerFeatures();
+        List<SASLMechanism> authenticationMethods = serverFeatures.getAuthenticationMethods();
+        
+        for(SASLMechanism m : authenticationMethods){
+        	System.out.println(m.getName());
         }
+        
 
         server.addModule(new SoftwareVersionModule());
         server.addModule(new EntityTimeModule());
         server.addModule(new VcardTempModule());
         server.addModule(new XmppPingModule());
         server.addModule(new PrivateDataModule());
-        server.addModule(new InBandRegistrationModule());
+        
+        // uncomment to enable in-band registrations (XEP-0077)
+        // server.addModule(new InBandRegistrationModule());
+        
         server.addModule(new AdhocCommandsModule());
         final ServiceAdministrationModule serviceAdministrationModule = new ServiceAdministrationModule();
         // unless admin user account with a secure password is added, this will be not become effective
@@ -139,9 +135,13 @@ public class ServerMain implements IoHandler{
             }
         }
         
+//        server.getServerRuntimeContext().getServerFeatures().
+        
+        System.out.println("vysper server is running...");
+        
         return server;
-    
     }
+    
     
     public IoAcceptor addShutdownHook() throws IOException{
     	//server.stop();
@@ -155,6 +155,7 @@ public class ServerMain implements IoHandler{
         
         return shutdownAcceptor;
     }
+
 
     private static List<Module> createModuleInstances(String[] moduleClassNames) {
         List<Module> modules = new ArrayList<Module>();
@@ -181,57 +182,51 @@ public class ServerMain implements IoHandler{
         return modules;
     }
     
-//    @Override
-	public void sessionOpened(IoSession session) throws Exception {
-		System.out
-				.println("ServerMain.startServer().new IoHandler() {...}.sessionOpened()");
-		
-	}
-	
-//	@Override
-	public void sessionIdle(IoSession session, IdleStatus idleStatus) throws Exception {
-		System.out
-				.println("ServerMain.startServer().new IoHandler() {...}.sessionIdle()");
-		
-	}
-	
-//	@Override
-	public void sessionCreated(IoSession session) throws Exception {
-		System.out
-				.println("ServerMain.startServer().new IoHandler() {...}.sessionCreated()");
-		
-	}
-	
-//	@Override
-	public void sessionClosed(IoSession session) throws Exception {
-		System.out
-				.println("ServerMain.startServer().new IoHandler() {...}.sessionClosed()");
-		
-	}
-	
-//	@Override
-	public void messageSent(IoSession session, Object message) throws Exception {
-		System.out
-				.println("ServerMain.startServer().new IoHandler() {...}.messageSent()");
-	}
-	
-//	@Override
-	public void messageReceived(IoSession session, Object message) throws Exception {
-		
-		String str = message.toString();
-		System.out.println( str );
-		
-		if( str.trim().equalsIgnoreCase("quit")){
-			session.close(true);
-			exit = true;
-			//shutdownAcceptor.unbind();
-			//System.exit(0);
-		}
-	}
-	
-//	@Override
-	public void exceptionCaught(IoSession session, Throwable thowable)
-			throws Exception {
-		thowable.printStackTrace();
-	}
+    
+    public void sessionOpened(IoSession session) throws Exception {
+  		System.out
+  				.println("ServerMain.startServer().new IoHandler() {...}.sessionOpened()");
+  		
+  	}
+  	
+  	public void sessionIdle(IoSession session, IdleStatus idleStatus) throws Exception {
+  		System.out
+  				.println("ServerMain.startServer().new IoHandler() {...}.sessionIdle()");
+  		
+  	}
+  	
+  	public void sessionCreated(IoSession session) throws Exception {
+  		System.out
+  				.println("ServerMain.startServer().new IoHandler() {...}.sessionCreated()");
+  		
+  	}
+  	
+  	public void sessionClosed(IoSession session) throws Exception {
+  		System.out
+  				.println("ServerMain.startServer().new IoHandler() {...}.sessionClosed()");
+  		
+  	}
+  	
+  	public void messageSent(IoSession session, Object message) throws Exception {
+  		System.out
+  				.println("ServerMain.startServer().new IoHandler() {...}.messageSent()");
+  	}
+  	
+  	public void messageReceived(IoSession session, Object message) throws Exception {
+  		
+  		String str = message.toString();
+  		System.out.println( str );
+  		
+  		if( str.trim().equalsIgnoreCase("quit")){
+  			session.close(true);
+  			exit = true;
+  			//shutdownAcceptor.unbind();
+  			//System.exit(0);
+  		}
+  	}
+  	
+  	public void exceptionCaught(IoSession session, Throwable thowable)
+  			throws Exception {
+  		thowable.printStackTrace();
+  	}
 }
