@@ -30,21 +30,21 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.karaf.shell</groupId>
 			<artifactId>org.apache.karaf.shell.core</artifactId>
 			<version>${karaf.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.ops4j.pax.exam</groupId>
 			<artifactId>pax-exam-junit4</artifactId>
 			<version>${version.pax-exam}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.karaf</groupId>
 			<artifactId>apache-karaf</artifactId>
@@ -57,8 +57,8 @@
 					<groupId>org.apache.karaf</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency> 
-		
+		</dependency>
+
 		<dependency>
 			<groupId>org.ops4j.pax.exam</groupId>
 			<artifactId>pax-exam-container-karaf</artifactId>
@@ -87,26 +87,47 @@
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
+					<includes>
+						<include>**/*Suite.java</include>
+					</includes>
 					<redirectTestOutputToFile>false</redirectTestOutputToFile>
 				</configuration>
 			</plugin>
-	
+
 			<plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-dependency-plugin</artifactId>
-		        <version>${maven.dependency.plugin.version}</version>
-		        <configuration>
-		          <artifactItems>
-		            <artifactItem>
-		             <groupId>tr.org.liderahenk</groupId>
-		             <artifactId>lider-pax-test</artifactId>
-		             <version>${lider.test.version}</version>
-		             <type>test-jar</type>
-		              <overWrite>false</overWrite>
-		              <outputDirectory>${project.build.directory}/test-classes</outputDirectory>
-		            </artifactItem>
-		          </artifactItems>
-		        </configuration>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>${maven.dependency.plugin.version}</version>
+				<!-- <configuration> <artifactItems> <artifactItem> <groupId>tr.org.liderahenk</groupId> 
+					<artifactId>lider-pax-test</artifactId> <version>${lider.test.version}</version> 
+					<type>test-jar</type> <overWrite>false</overWrite> <outputDirectory>${project.build.directory}/test-classes</outputDirectory> 
+					</artifactItem> </artifactItems> </configuration> -->
+				<executions>
+					<!-- <execution> <id>copy</id> <phase>install</phase> <goals> <goal>unpack</goal> 
+						</goals> <configuration> <artifactItems> <artifactItem> <groupId>tr.org.liderahenk</groupId> 
+						<artifactId>lider-pax-test</artifactId> <version>${lider.test.version}</version> 
+						<type>test-jar</type> <overWrite>false</overWrite> <outputDirectory>${project.build.directory}/test-classes</outputDirectory> 
+						</artifactItem> </artifactItems> </configuration> </execution> -->
+					<execution>
+						<id>copy</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>tr.org.liderahenk</groupId>
+									<artifactId>lider-pax-test</artifactId>
+									<version>${lider.test.version}</version>
+									<type>test-jar</type>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.directory}/test-classes</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 
 		</plugins>
