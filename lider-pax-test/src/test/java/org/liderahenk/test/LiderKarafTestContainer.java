@@ -2,14 +2,11 @@ package org.liderahenk.test;
 import static org.junit.Assert.assertTrue;
 import static org.ops4j.pax.exam.CoreOptions.maven;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.configureSecurity;
+import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.features;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.karafDistributionConfiguration;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.keepRuntimeFolder;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.logLevel;
-import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.features;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.replaceConfigurationFile;
-import static org.ops4j.pax.exam.CoreOptions.streamBundle;
-import static org.ops4j.pax.tinybundles.core.TinyBundles.bundle;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -48,6 +45,7 @@ import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
 import org.apache.karaf.shell.api.console.Session;
 import org.apache.karaf.shell.api.console.SessionFactory;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.ops4j.pax.exam.Configuration;
@@ -81,9 +79,9 @@ public class LiderKarafTestContainer {
     public static final String MIN_SSH_PORT = "8101";
     public static final String MAX_SSH_PORT = "8888";
 
-    static final Long COMMAND_TIMEOUT = 30000L;
-    static final Long SERVICE_TIMEOUT = 30000L;
-    static final long BUNDLE_TIMEOUT = 30000L;
+    static final Long COMMAND_TIMEOUT = 3000L;
+    static final Long SERVICE_TIMEOUT = 3000L;
+    static final long BUNDLE_TIMEOUT = 3000L;
 
     private static Logger LOG = LoggerFactory.getLogger(LiderKarafTestContainer.class);
     private Option[] customOptions;
@@ -113,8 +111,41 @@ public class LiderKarafTestContainer {
 
     @ProbeBuilder
     public TestProbeBuilder probeConfiguration(TestProbeBuilder probe) {
-        probe.setHeader(Constants.DYNAMICIMPORT_PACKAGE, "*,tr.org.liderahenk.*,org.apache.felix.service.*;status=provisional");
+        probe.setHeader(Constants.DYNAMICIMPORT_PACKAGE, "*,ch.vorburger.exec.*,org.liderahenk.*,tr.org.liderahenk.*,org.apache.felix.service.*;status=provisional");
+        
+//        try {
+//			LiderEmbeddedResourceManager.start();
+//		} catch (ManagedProcessException e) {
+//			e.printStackTrace();
+//		}
+        System.out.println("######################");
+        System.out.println("probe start");
+        System.out.println("######################");
+      
         return probe;
+    }
+    
+    
+//    @BeforeClass
+//    public static void initializeEmbeddedServers(){
+//    	LiderEmbeddedResourceManager.start();
+//		System.out.println("Started embedded db");
+//    }
+//    
+//    @AfterClass
+//    public static void destroyEmbeddedServers(){
+//    	LiderEmbeddedResourceManager.stop();
+//		System.out.println("Stopped embedded db");
+//    }
+    
+    
+    @After
+    public void after(){
+//    	try {
+//			LiderEmbeddedResourceManager.stop();
+//		} catch (ManagedProcessException e) {
+//			e.printStackTrace();
+//		}
     }
 
     public File getConfigFile(String path) {
@@ -151,6 +182,11 @@ public class LiderKarafTestContainer {
          options[4]= logLevel(LogLevel.INFO);
          options[5]= features(liderRepo, "lider");
          options[6]= replaceConfigurationFile("etc/tr.org.liderahenk.cfg", getConfigFile("/etc/tr.org.liderahenk.cfg"));
+//         options[7]= replaceConfigurationFile("etc/org.ops4j.pax.url.mvn.cfg", getConfigFile("/etc/org.ops4j.pax.url.mvn.cfg"));
+//         options[8]= wrappedBundle(mavenBundle().groupId("ch.vorburger.mariaDB4j").artifactId("mariaDB4j").version("2.1.3"));
+//         options[9]= wrappedBundle(mavenBundle().groupId("ch.vorburger.mariaDB4j").artifactId("mariaDB4j-db-linux64").version("10.1.8"));
+//         options[10]= mavenBundle().groupId("org.apache.commons").artifactId("commons-lang3").version("3.0");
+//         options[11]= mavenBundle().groupId("tr.org.liderahenk").artifactId("lider-embedded-db").version("1.0.0-SNAPSHOT");
          
          if (getCustomOptions() != null){
         	 for(int i=0;i<getCustomOptions().length;i++){
@@ -480,6 +516,10 @@ public class LiderKarafTestContainer {
                 Assert.fail("Feature " + featureName + (featureVersion != null ? "/" + featureVersion : "") + " is installed whereas it should not be");
             }
         }
+    }
+    
+    public void destroyEmbeddedApps(){
+    	
     }
 
     public void assertContains(String expectedPart, String actual) {

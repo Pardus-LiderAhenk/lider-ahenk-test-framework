@@ -20,6 +20,28 @@
 	</properties>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>tr.org.liderahenk</groupId>
+			<artifactId>lider-embedded-db</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>tr.org.liderahenk</groupId>
+			<artifactId>lider-embedded-ldap</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>tr.org.liderahenk</groupId>
+			<artifactId>lider-embedded-xmpp</artifactId>
+		</dependency>
+		
+		
+		
+		
+		
+		
+
 		<dependency>
 			<groupId>org.osgi</groupId>
 			<artifactId>org.osgi.core</artifactId>
@@ -175,4 +197,40 @@
 			</plugin>
 		</plugins>
 	</build>
+
+
+	<profiles>
+		<profile>
+			<id>embedded</id>
+			<build>
+				<defaultGoal>test</defaultGoal>
+				<plugins>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.8</version>
+						<executions>
+							<execution>
+								<phase>test-compile</phase>
+								<configuration>
+									<tasks>
+										<echo taskname="fitnesse" message="Starting Server..." />
+										<java classname="embedded.liderahenk.resources.BuildTestEnvironment" fork="true"
+											failonerror="true" classpathref="maven.runtime.classpath">
+											<jvmarg value="-Xmx1024m" />
+										</java>
+									</tasks>
+									
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+
 </project>
