@@ -20,6 +20,7 @@
 		<lider.test.version>1.0.0-SNAPSHOT</lider.test.version>
 		<maven.dependency.plugin.version>2.10</maven.dependency.plugin.version>
 		<depends.maven.plugin.version>1.2</depends.maven.plugin.version>
+		<maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
 	</properties>
 
 	<dependencies>
@@ -30,7 +31,29 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
-
+		
+		<dependency>
+			<groupId>tr.org.liderahenk</groupId>
+			<artifactId>lider-pax-test</artifactId>
+			<version>${lider.test.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>tr.org.liderahenk</groupId>
+			<artifactId>lider-embedded-ldap</artifactId>
+			<version>${lider.test.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>tr.org.liderahenk</groupId>
+			<artifactId>lider-embedded-db</artifactId>
+			<version>${lider.test.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>tr.org.liderahenk</groupId>
+			<artifactId>lider-embedded-xmpp</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.karaf.shell</groupId>
 			<artifactId>org.apache.karaf.shell.core</artifactId>
@@ -69,21 +92,6 @@
 
 	<build>
 		<plugins>
-
-			<plugin>
-				<groupId>org.apache.servicemix.tooling</groupId>
-				<artifactId>depends-maven-plugin</artifactId>
-				<version>${depends.maven.plugin.version}</version>
-				<executions>
-					<execution>
-						<id>generate-depends-file</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>generate-depends-file</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
@@ -93,21 +101,11 @@
 					<redirectTestOutputToFile>false</redirectTestOutputToFile>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<version>${maven.dependency.plugin.version}</version>
-				<!-- <configuration> <artifactItems> <artifactItem> <groupId>tr.org.liderahenk</groupId> 
-					<artifactId>lider-pax-test</artifactId> <version>${lider.test.version}</version> 
-					<type>test-jar</type> <overWrite>false</overWrite> <outputDirectory>${project.build.directory}/test-classes</outputDirectory> 
-					</artifactItem> </artifactItems> </configuration> -->
 				<executions>
-					<!-- <execution> <id>copy</id> <phase>install</phase> <goals> <goal>unpack</goal> 
-						</goals> <configuration> <artifactItems> <artifactItem> <groupId>tr.org.liderahenk</groupId> 
-						<artifactId>lider-pax-test</artifactId> <version>${lider.test.version}</version> 
-						<type>test-jar</type> <overWrite>false</overWrite> <outputDirectory>${project.build.directory}/test-classes</outputDirectory> 
-						</artifactItem> </artifactItems> </configuration> </execution> -->
 					<execution>
 						<id>copy</id>
 						<phase>clean</phase>
@@ -129,7 +127,37 @@
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>embedded</id>
+			<build>
+				<defaultGoal>test</defaultGoal>
+				<plugins>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>${maven.antrun.plugin.version}</version>
+						<executions>
+							<execution>
+								<phase>test-compile</phase>
+								<configuration>
+									<tasks>
+										<echo taskname="fitnesse" message="Starting Server..." />
+										<java classname="test.BuildTestEnvironment" fork="true"
+											failonerror="true" classpathref="maven.runtime.classpath">
+											<jvmarg value="-Xmx1024m" />
+										</java>
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

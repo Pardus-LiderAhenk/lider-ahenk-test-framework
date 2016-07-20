@@ -6,7 +6,7 @@ import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 
 public class EmbeddedMariaDB {
 	
-	private Integer port = 3306;
+	private Integer port = 3307;
 	private String dataPath = "/tmp/db";
 	private String dbName = "liderdb";
 	private DBConfigurationBuilder configBuilder;
@@ -17,7 +17,12 @@ public class EmbeddedMariaDB {
 		getConfigBuilder().setPort(getPort());
 		getConfigBuilder().setDataDir(getDataPath());
 		try {
-			setDb(DB.newEmbeddedDB(getConfigBuilder().build()));
+			
+			
+			
+			setDb(MyDB.newMyDb(getConfigBuilder().build()));
+			//setDb(DB.newEmbeddedDB(getConfigBuilder().build()));
+			
 		} catch (ManagedProcessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
