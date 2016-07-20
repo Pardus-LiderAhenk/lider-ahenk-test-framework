@@ -2,7 +2,9 @@ package test.liderahenk.xmpp;
 
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -48,6 +50,7 @@ public class ServerMain implements IoHandler {
 	private IoAcceptor shutdownAcceptor;
 	
 	public boolean exit = false;
+	private FileOutputStream outputStream;
 	
 	public ServerMain() throws Exception {
 		server = init();
@@ -100,7 +103,25 @@ public class ServerMain implements IoHandler {
         server.setStorageProviderRegistry(providerRegistry);
         
 //        server.setTLSCertificateInfo(new File("src/main/config/bogus_mina_tls.cert"), "boguspw");
-        server.setTLSCertificateInfo(new File("src/main/config/keystore.jks"), "123456");
+        
+       
+        InputStream exampleDataIS = getClass().getResourceAsStream("/keystore.jks");
+
+		outputStream = new FileOutputStream(new File("/tmp/keystore.jks"));
+
+		int read = 0;
+		byte[] bytes = new byte[1024];
+
+		while ((read = exampleDataIS.read(bytes)) != -1) {
+			outputStream.write(bytes, 0, read);
+		}
+		
+		
+        server.setTLSCertificateInfo(new File("/tmp/keystore.jks"), "123456");
+        
+        //InputStream resourceAsStream = getClass().getResourceAsStream("keystore.jks");
+        
+        //server.setTLSCertificateInfo(new File("keystore.jks"), "123456");
         
         server.start();
         
@@ -137,7 +158,7 @@ public class ServerMain implements IoHandler {
         
 //        server.getServerRuntimeContext().getServerFeatures().
         
-        System.out.println("vysper server is running...");
+        System.out.println("vysper jabber server is running...");
         
         return server;
     }

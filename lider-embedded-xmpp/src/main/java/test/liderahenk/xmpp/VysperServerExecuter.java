@@ -9,7 +9,7 @@ public class VysperServerExecuter extends Thread {
 		try {
 			server = new ServerMain();
 		} catch (Exception e) {
-			server.stopServer();
+//			server.stopServer();
 			e.printStackTrace();
 		}
 	}
