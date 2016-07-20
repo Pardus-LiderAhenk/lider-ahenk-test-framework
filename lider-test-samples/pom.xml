@@ -144,7 +144,7 @@
 								<configuration>
 									<tasks>
 										<echo taskname="fitnesse" message="Starting Server..." />
-										<java classname="test.BuildTestEnvironment" fork="true"
+										<java classname="embedded.liderahenk.resources.BuildTestEnvironment" fork="true"
 											failonerror="true" classpathref="maven.runtime.classpath">
 											<jvmarg value="-Xmx1024m" />
 										</java>
