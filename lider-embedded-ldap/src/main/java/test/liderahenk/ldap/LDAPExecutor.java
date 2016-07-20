@@ -18,4 +18,10 @@ public class LDAPExecutor extends Thread{
 		
 	}
 
+
+	public static void main(String...strings){
+		LDAPExecutor e = new LDAPExecutor();
+		e.start();
+	}
+	
 }
