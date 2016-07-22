@@ -15,7 +15,7 @@
 	<properties>
 		<version.pax-exam>4.8.0</version.pax-exam>
 		<junit.version>4.11</junit.version>
-		<karaf.version>4.0.4</karaf.version>
+		<karaf.version>4.0.5</karaf.version>
 		<osgi.version>6.0.0</osgi.version>
 	</properties>
 

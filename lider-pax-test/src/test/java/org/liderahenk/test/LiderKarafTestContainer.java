@@ -112,41 +112,9 @@ public class LiderKarafTestContainer {
     @ProbeBuilder
     public TestProbeBuilder probeConfiguration(TestProbeBuilder probe) {
         probe.setHeader(Constants.DYNAMICIMPORT_PACKAGE, "*,ch.vorburger.exec.*,org.liderahenk.*,tr.org.liderahenk.*,org.apache.felix.service.*;status=provisional");
-        
-//        try {
-//			LiderEmbeddedResourceManager.start();
-//		} catch (ManagedProcessException e) {
-//			e.printStackTrace();
-//		}
-        System.out.println("######################");
-        System.out.println("probe start");
-        System.out.println("######################");
-      
         return probe;
     }
-    
-    
-//    @BeforeClass
-//    public static void initializeEmbeddedServers(){
-//    	LiderEmbeddedResourceManager.start();
-//		System.out.println("Started embedded db");
-//    }
-//    
-//    @AfterClass
-//    public static void destroyEmbeddedServers(){
-//    	LiderEmbeddedResourceManager.stop();
-//		System.out.println("Stopped embedded db");
-//    }
-    
-    
-    @After
-    public void after(){
-//    	try {
-//			LiderEmbeddedResourceManager.stop();
-//		} catch (ManagedProcessException e) {
-//			e.printStackTrace();
-//		}
-    }
+        
 
     public File getConfigFile(String path) {
         URL res = this.getClass().getResource(path);
@@ -168,7 +136,7 @@ public class LiderKarafTestContainer {
     	
     	
     	
-    	 MavenArtifactUrlReference karafUrl = maven().groupId("org.apache.karaf").artifactId("apache-karaf").version("4.0.4").type("tar.gz");
+    	 MavenArtifactUrlReference karafUrl = maven().groupId("org.apache.karaf").artifactId("apache-karaf").version("4.0.5").type("tar.gz");
          MavenUrlReference liderRepo = maven().groupId("tr.org.liderahenk").artifactId("lider-features").version("1.0.0-SNAPSHOT").classifier("features").type("xml");
          String httpPort = Integer.toString(getAvailablePort(Integer.parseInt(MIN_HTTP_PORT), Integer.parseInt(MAX_HTTP_PORT)));
          String rmiRegistryPort = Integer.toString(getAvailablePort(Integer.parseInt(MIN_RMI_REG_PORT), Integer.parseInt(MAX_RMI_REG_PORT)));
