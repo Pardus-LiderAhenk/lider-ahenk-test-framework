@@ -53,6 +53,7 @@
 		<dependency>
 			<groupId>tr.org.liderahenk</groupId>
 			<artifactId>lider-embedded-xmpp</artifactId>
+			<version>${lider.test.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.karaf.shell</groupId>
