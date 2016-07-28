@@ -6,22 +6,28 @@ import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 
 public class EmbeddedMariaDB {
 	
-	private Integer port = 3307;
+	private Integer port = 3306;
 	private String dataPath = "/tmp/db";
 	private String dbName = "liderdb";
 	private DBConfigurationBuilder configBuilder;
 	private DB db;
 	
 	public void init(){
-		setConfigBuilder(DBConfigurationBuilder.newBuilder());
-		getConfigBuilder().setPort(getPort());
-		getConfigBuilder().setDataDir(getDataPath());
+//		setConfigBuilder(DBConfigurationBuilder.newBuilder());
+//		getConfigBuilder().setPort(getPort());
+//		
+//		getConfigBuilder().setDataDir(getDataPath());
+		
+		
+		DBConfigurationBuilder configBuilder = DBConfigurationBuilder.newBuilder();
+		configBuilder.setPort(3306); // OR, default: setPort(0); => autom. detect free port
+		configBuilder.setDataDir("/tmp/db"); // just an example
 		try {
 			
 			
 			
-			setDb(MyDB.newMyDb(getConfigBuilder().build()));
-			//setDb(DB.newEmbeddedDB(getConfigBuilder().build()));
+			//setDb(MyDB.newMyDb(getConfigBuilder().build()));
+			db = DB.newEmbeddedDB(configBuilder.build());
 			
 		} catch (ManagedProcessException e) {
 			// TODO Auto-generated catch block
@@ -30,9 +36,11 @@ public class EmbeddedMariaDB {
 	}
 	
 	public void start(){
-		if(getDb() != null){
+		if(db != null){
 			try {
-				getDb().start();
+				db.start();
+				db.createDB("liderdb");
+				System.out.println("CREATED LIDERDB");
 			} catch (ManagedProcessException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

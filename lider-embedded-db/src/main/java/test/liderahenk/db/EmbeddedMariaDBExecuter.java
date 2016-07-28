@@ -13,6 +13,7 @@ public class EmbeddedMariaDBExecuter extends Thread{
 		getEmbeddedDb().init();
 		
 		getEmbeddedDb().start();
+		
 		System.out.println("Started embedded mariadb database");
 	}
 
@@ -30,4 +31,11 @@ public class EmbeddedMariaDBExecuter extends Thread{
 	
 	
 
+	
+	public static void main(String...strings){
+		EmbeddedMariaDBExecuter d = new EmbeddedMariaDBExecuter();
+		d.start();
+	}
+	
+	
 }

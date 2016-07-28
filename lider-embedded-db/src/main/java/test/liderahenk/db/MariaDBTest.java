@@ -8,15 +8,15 @@ public class MariaDBTest {
 	
 	public static void main(String...strings){
 		DBConfigurationBuilder configBuilder = DBConfigurationBuilder.newBuilder();
-		configBuilder.setPort(3307); // OR, default: setPort(0); => autom. detect free port
-		configBuilder.setDataDir("/tmp/db"); // just an example
+		configBuilder.setPort(3306); // OR, default: setPort(0); => autom. detect free port
+		configBuilder.setDataDir("/tmp/db1"); // just an example
 		
 		try {
 			DB db = DB.newEmbeddedDB(configBuilder.build());
 			db.start();
 			db.createDB("liderdb");
 			System.out.println("created db");
-			db.stop();
+			//db.stop();
 		} catch (ManagedProcessException e) {
 			e.printStackTrace();
 		}
