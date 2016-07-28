@@ -79,9 +79,9 @@ public class LiderKarafTestContainer {
     public static final String MIN_SSH_PORT = "8101";
     public static final String MAX_SSH_PORT = "8888";
 
-    static final Long COMMAND_TIMEOUT = 3000L;
-    static final Long SERVICE_TIMEOUT = 3000L;
-    static final long BUNDLE_TIMEOUT = 3000L;
+    static final Long COMMAND_TIMEOUT = 30000L;
+    static final Long SERVICE_TIMEOUT = 30000L;
+    static final long BUNDLE_TIMEOUT = 30000L;
 
     private static Logger LOG = LoggerFactory.getLogger(LiderKarafTestContainer.class);
     private Option[] customOptions;
