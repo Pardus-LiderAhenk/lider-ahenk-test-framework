@@ -1,5 +1,10 @@
 package test.liderahenk.db;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import ch.vorburger.exec.ManagedProcessException;
 import ch.vorburger.mariadb4j.DB;
 import ch.vorburger.mariadb4j.DBConfigurationBuilder;
@@ -11,26 +16,18 @@ public class EmbeddedMariaDB {
 	private String dbName = "liderdb";
 	private DBConfigurationBuilder configBuilder;
 	private DB db;
+	Properties liderProp;
 	
 	public void init(){
-//		setConfigBuilder(DBConfigurationBuilder.newBuilder());
-//		getConfigBuilder().setPort(getPort());
-//		
-//		getConfigBuilder().setDataDir(getDataPath());
-		
-		
-		DBConfigurationBuilder configBuilder = DBConfigurationBuilder.newBuilder();
-		configBuilder.setPort(3306); // OR, default: setPort(0); => autom. detect free port
-		configBuilder.setDataDir("/tmp/db"); // just an example
 		try {
 			
+			liderProp = readProperties();
 			
-			
-			//setDb(MyDB.newMyDb(getConfigBuilder().build()));
+			DBConfigurationBuilder configBuilder = DBConfigurationBuilder.newBuilder();
+			configBuilder.setPort(Integer.parseInt(liderProp.getProperty("embedded.db.port")));
+			configBuilder.setDataDir(liderProp.getProperty("embedded.db.dataPath")); 
 			db = DB.newEmbeddedDB(configBuilder.build());
-			
-		} catch (ManagedProcessException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -39,10 +36,8 @@ public class EmbeddedMariaDB {
 		if(db != null){
 			try {
 				db.start();
-				db.createDB("liderdb");
-				System.out.println("CREATED LIDERDB");
+				db.createDB(liderProp.getProperty("embedded.db.name"));
 			} catch (ManagedProcessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -53,10 +48,17 @@ public class EmbeddedMariaDB {
 			try {
 				getDb().stop();
 			} catch (ManagedProcessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	
+	public Properties readProperties() throws IOException{
+		Properties prop = new Properties();
+		InputStream liderProp = new FileInputStream(this.getClass().getResource("/lider-embedded.properties").getFile());
+		prop.load(liderProp);
+		return prop;
 	}
 
 	public Integer getPort() {
